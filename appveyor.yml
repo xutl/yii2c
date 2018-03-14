@@ -59,8 +59,6 @@ platform:
 branches:
   only:
     - master
-    - 4.0.x
-    - 3.3.x
 
 install:
     - git submodule update --init --recursive

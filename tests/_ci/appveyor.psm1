@@ -283,7 +283,7 @@ Function InstallPhpDevPack {
 }
 
 Function InstallStablePhalcon {
-	$BaseUri = "https://github.com/phalcon/cphalcon/releases/download"
+	$BaseUri = "https://github.com/xutl/yiic/releases/download"
 	$PatchSuffix = ".0"
 	$LocalPart = "${Env:PACKAGE_PREFIX}_${Env:PLATFORM}_vc${Env:VC_VERSION}_php${Env:PHP_MINOR}${PatchSuffix}"
 
