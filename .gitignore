@@ -14,3 +14,12 @@ Thumbs.db
 
 # Mac DS_Store Files
 .DS_Store
+
+# Build Cache
+.temp
+
+# composer lock
+/composer.lock
+
+# composer vendor dir
+/vendor
