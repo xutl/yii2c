@@ -1,4 +1,4 @@
-namespace yii\base;
+namespace Yii\Base;
 
 interface Configurable
 {

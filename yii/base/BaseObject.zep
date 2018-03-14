@@ -1,4 +1,4 @@
-namespace yii\base;
+namespace Yii\Base;
 
 class BaseObject implements Configurable
 {
@@ -22,7 +22,7 @@ class BaseObject implements Configurable
      *
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
-	public function __construct(config=[])
+	public function __construct(array! config=[])
 	{
 		var name,value;
 		if(!empty(config)) {
