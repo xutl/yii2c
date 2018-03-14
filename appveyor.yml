@@ -1,0 +1,114 @@
+version: 1.0.0-{build}
+
+environment:
+    matrix:
+        - PHP_MINOR: 7.0
+          VC_VERSION: 14
+          BUILD_TYPE: Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+        - PHP_MINOR: 7.0
+          VC_VERSION: 14
+          BUILD_TYPE: nts-Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+        - PHP_MINOR: 7.1
+          VC_VERSION: 14
+          BUILD_TYPE: Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+        - PHP_MINOR: 7.1
+          VC_VERSION: 14
+          BUILD_TYPE: nts-Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+        - PHP_MINOR: 7.2
+          VC_VERSION: 15
+          BUILD_TYPE: Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+        - PHP_MINOR: 7.2
+          VC_VERSION: 15
+          BUILD_TYPE: nts-Win32
+          APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    PHP_PATH: C:\Projects\php
+    PHP_SDK_PATH: C:\Projects\php-sdk
+    DEVPACK_PATH: C:\Projects\php-devpack
+    TEST_PHP_EXECUTABLE: C:\Projects\php\php.exe
+    PHP_SDK_VERSION: 2.0.7
+    PACKAGE_PREFIX: yii2
+    EXTENSION_NAME: yii2
+    EXTENSION_FILE: php_yii2.dll
+    NO_INTERACTION: 1
+    REPORT_EXIT_STATUS: 1
+    COMPOSER_NO_INTERACTION: 1
+    PARSER_VERSION: 1.1.2
+    PARSER_RELEASE: 290
+    YII2_STABLE_VERSION: 2.0.14
+
+matrix:
+    fast_finish: true
+
+cache:
+    - 'C:\Downloads -> appveyor.yml'
+    - 'vendor -> composer.json'
+    - 'composer.phar -> composer.json'
+
+clone_depth: 1
+clone_folder: c:\projects\yii2
+
+platform:
+    - x86
+    - x64
+
+branches:
+  only:
+    - master
+    - 4.0.x
+    - 3.3.x
+
+install:
+    - git submodule update --init --recursive
+    - ps: Import-Module .\tests\_ci\appveyor.psm1
+    - ps: AppendSessionPath
+    - ps: SetupPhpVersionString
+    - ps: EnsureRequiredDirectoriesPresent
+    - ps: Ensure7ZipIsInstalled
+    - ps: InstallSdk
+    - ps: InstallPhp
+    - ps: InstallPhpDevPack
+    - ps: InstallStablePhalcon
+    - ps: InstallParser
+    - ps: TuneUpPhp
+
+build_script:
+    - ps: InitializeBuildVars
+    - ps: InitializeReleaseVars
+    - ps: InstallBuildDependencies
+    - '"%VSCOMNTOOLS%\VsDevCmd" %PLATFORM%'
+    - '"%VSCOMNTOOLS%\..\..\VC\vcvarsall.bat" %ARCH%'
+    - '%PHP_SDK_PATH%\bin\phpsdk_setvars'
+    - 'vendor\bin\zephir generate --backend=ZendEngine3 -Wnonexistent-function -Wnonexistent-class -Wunused-variable'
+    - 'cd %APPVEYOR_BUILD_FOLDER%\build'
+    - 'php gen-build.php'
+    - 'cd %APPVEYOR_BUILD_FOLDER%\build\php7\safe'
+    - '%DEVPACK_PATH%\phpize.bat'
+    - 'configure --with-prefix=%PHP_PATH% --with-php-build=%DEVPACK_PATH% --disable-all --enable-phalcon'
+    - nmake 2> compile-errors.log 1> compile.log
+    - ps: EnableExtension
+
+after_build:
+    - ps: PrepareReleasePackage
+
+artifacts:
+    - path: '.\$(RELEASE_ZIPBALL).zip'
+      type: zip
+      name: Yii2
+
+on_failure :
+    - ps: PrintLogs "${Env:APPVEYOR_BUILD_FOLDER}\build\php7\safe"
+    - ps: PrintVars
+    - ps: PrintDirectoriesContent
+    - ps: PrintPhpInfo
+
+notifications:
+    - provider: Email
+      to:
+        - build@yuncms.net
+      subject: "Build Yii2 [{{status}}]"
+      on_build_status_changed: true
