@@ -1,4 +1,5 @@
 namespace Yii\Base;
+use Yii\BaseYii;
 
 class BaseObject implements Configurable
 {
@@ -24,12 +25,9 @@ class BaseObject implements Configurable
      */
 	public function __construct(array! config=[])
 	{
-		var name,value;
-		if(!empty(config)) {
-			for name, value in config {
-				let this->{name} = value;
-			}
-		}
+		if (!empty config ) {
+            BaseYii::configure(this, config);
+        }
 		this->init();
 	}
 
